@@ -3,7 +3,7 @@
  *
  * Information about usage can be found in the README file.
  *
- * @version 1.0.0
+ * @version 1.0.2
  * @author  HSstudent16
  * @license MIT
  */
@@ -32,7 +32,7 @@ var KAThumbnail = ((root, udf) => {
       exports = {
         get mode () { return mode },
         get background () { return background },
-        get origin () { return {originX, originY} }
+        get origin () { return {x: originX, y: originY} }
       };
 
   /**
@@ -87,7 +87,7 @@ var KAThumbnail = ((root, udf) => {
    */
   function setup (config) {
     let wasCnv = canvas;
-    let origin = config.origin ?? config.backgroundOirign ?? origin;
+    let origin = config.origin ?? config.backgroundOirign ?? exports.origin;
 
     mode = config.mode ?? config.resize ?? mode;
     background = config.background ?? config.backgroundColor ?? background;
@@ -175,9 +175,9 @@ var KAThumbnail = ((root, udf) => {
    *   The thumbnail source.
    */
   function getSource () {
-    let source;
+    let source = canvas;
     
-    if (!canvas) {
+    if (!source) {
       source = doc.querySelector(
         "canvas#thumbnail,canvas[thumbnail],canvas[for=thumbnail],canvas[data-thumbnail],canvas[name=thumbnail],canvas.thumbnail"
       );
@@ -189,7 +189,11 @@ var KAThumbnail = ((root, udf) => {
       try {
         source.toDataURL();
         isSafe = true;
-      } catch (silently_ignore) {}
+      } catch (silently_ignore) {
+        alert ("Oh Noes! Your thumbnail source contains cross-origin data, and cannot be exported.")
+      }
+    } else {
+      alert ("Oh Noes!  A thumbnail source was not detected.");
     }
 
     if (isSafe) {
