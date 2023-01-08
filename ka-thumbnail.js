@@ -95,10 +95,12 @@ var KAThumbnail = ((root, udf) => {
 
     originX = Math.clamp((1 - origin.right) ?? origin.left ?? origin.x ?? originX, 0, 1);
     originY = Math.clamp((1 - origin.bottom) ?? origin.top ?? origin.y ?? originY);
-
-    if (!(canvas instanceof root.HTMLCanvasElement) || !(canvas instanceof root.HTMLImageElement)) {
-      alert ("Oh Noes! " + canvas.constructor.name + "s do not make nice thumbnails")
-      canvas = wasCnv;
+    
+    if (canvas) {
+      if (!(canvas instanceof root.HTMLCanvasElement) || !(canvas instanceof root.HTMLImageElement)) {
+        alert ("Oh Noes! " + canvas.constructor.name + "s do not make nice thumbnails")
+        canvas = wasCnv;
+      }
     }
   }
   exports.setup = setup;
