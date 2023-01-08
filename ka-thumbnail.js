@@ -178,7 +178,7 @@ var KAThumbnail = ((root, udf) => {
     let source;
     
     if (!canvas) {
-      source = doc.querySelectorAll(
+      source = doc.querySelector(
         "canvas#thumbnail,canvas[thumbnail],canvas[for=thumbnail],canvas[data-thumbnail],canvas[name=thumbnail],canvas.thumbnail"
       );
     }
