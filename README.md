@@ -45,9 +45,9 @@ P5.js is the sister project of Processing, and is a great library for games and 
 </script>
 ```
 
-### Ski.js
+### ski.js
 
-Ski.js is a lightweight spin-off of Processing.JS that closely wraps the native Canvas API, while still providing the beginner-friendliness of Processing.  Ski, [@TheLegendSki](https://www.khanacademy.org/profile/thelegendski/) is also a Khan Academy user, and has his own thumbnail script!  Check it out [here](https://github.com/thelegendski/thumbnail.js).
+ski.js is a lightweight spin-off of Processing.JS that closely wraps the native Canvas API, while still providing the beginner-friendliness of Processing.  ski, [@thelegendski](https://www.khanacademy.org/profile/thelegendski/) is also a Khan Academy user, and has his own thumbnail script!  Check it out [here](https://github.com/thelegendski/thumbnail.js).
 ```
 <script>
   size (200, 200);
@@ -56,7 +56,7 @@ Ski.js is a lightweight spin-off of Processing.JS that closely wraps the native 
     canvas: canvas
   });
   
-  draw = function () {
+  draw = () => {
     // Drawing goes here! :D
   };
 </script>
