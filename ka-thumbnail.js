@@ -124,7 +124,7 @@ var KAThumbnail = ((root, udf) => {
     ctx.drawImage (
       source,
       Math.min(0, originX * size * (1 - ratio)),
-      Math.min(0, originY * size * (1 - 1/ratio)),
+      Math.min(0, originY * size * (1 - (1 / ratio))),
       source.width * scale,
       source.height * scale
     );
@@ -142,7 +142,7 @@ var KAThumbnail = ((root, udf) => {
     ctx.drawImage  (
       source,
       Math.max(0, 0.5 * size * (1 - ratio)),
-      Math.max(0, 0.5 * size * (1 - 1/ratio)),
+      Math.max(0, 0.5 * size * (1 - (1 / ratio))),
       source.width * scale,
       source.height * scale
     );
