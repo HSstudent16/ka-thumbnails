@@ -3,9 +3,14 @@
  *
  * Information about usage can be found in the README file.
  *
- * @version 1.0.2
+ * @version 1.1.0-Dev
  * @author  HSstudent16
  * @license MIT
+ * 
+ * @todo
+ *  - Globalize thumbnail canvas & context
+ *  - Add keybinding defaults & settings for thumbnail preview
+ *  - Append canvas to DOM & style if binding set.
  */
 var KAThumbnail = ((root, udf) => {
 
@@ -14,6 +19,9 @@ var KAThumbnail = ((root, udf) => {
 
   if (!root.parent || !root.document) return;
 
+  /**
+   * @type {Document}
+   */
   let doc = root.document;
 
   // Global properties of the thumbnail
@@ -21,18 +29,23 @@ var KAThumbnail = ((root, udf) => {
       background = "white",
       originX = 0.5,
       originY = 0.5,
+      keyBinding = "Alt + T",
+      canvasWasPushed = false,
 
   /**
    * The thumbnail source
    * @type {HTMLCanvasElement|HTMLImageElement}
    */
-      canvas,
+      source,
+      canvas = doc.createElement("canvas"),
+      context = canvas.getContext("2d"),
 
   // KAThumbnail.JS
       exports = {
         get mode () { return mode },
         get background () { return background },
-        get origin () { return {x: originX, y: originY} }
+        get origin () { return {x: originX, y: originY} },
+        get keyBinding () { return keyBinding }
       };
 
   /**
@@ -46,6 +59,67 @@ var KAThumbnail = ((root, udf) => {
    * @returns {number} The final, clamped, value.
    */
   Math.clamp = (v, m, x) => v < m ? m : v > x ? x : v;
+
+  /**
+   * Manages the key binding for toggling the canvas, when needed.
+   * @param {KeyboardEvent} evt The event object handed by the listener
+   */
+  function checkKeyBinding (evt) {
+    let strokes = keyBinding.split(/\s*[+]\s*/g);
+    
+    if (!canvasWasPushed) return;
+    
+    winders:for (let key of strokes) {
+      switch (key.toLowerCase()) {
+        case "alt":
+          if (!evt.altKey) return; break;
+        case "ctrl":
+        case "control":
+        case "cmd":
+        case "command":
+          if (!evt.ctrlKey) return; break;
+        case "meta":
+        case "home":
+          if (!evt.metaKey) return; break;
+        default:
+          if (key.length < 2) {
+            key = "Key" + key.toUpperCase();
+          }
+          if (evt.code !== key) return;
+          break winders;
+      }
+    }
+
+    toggleCanvas ();
+  }
+
+  /**
+   * Pushes the destination canvas to the document's <body> tag,
+   * and gives it style :D
+   */
+  function appendToDOM () {
+    let wrapper = doc.createElement ("div");
+
+    canvas.dataset.open = "false";
+
+    wrapper.setAttribute (
+      "style",
+      `position: fixed;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       top: 0;
+       left: 0;
+       width: 100vw;
+       height: 100vh;
+       backdrop-filter: blur(5px);
+       opacity: 0;
+       visibility: hidden;
+       transition: all ease .2s;`
+    );
+    wrapper.appendChild(canvas);
+    doc.body.appendChild(wrapper);
+  }
 
   /**
    * Changes the configuration for saving a thumbnail.
@@ -86,20 +160,30 @@ var KAThumbnail = ((root, udf) => {
    *   the bottom-most.  Values not between 0 and 1 will be clamped.
    */
   function setup (config) {
-    let wasCnv = canvas;
+    let wasCnv = source;
     let origin = config.origin ?? config.backgroundOirign ?? exports.origin;
+    let pushCanvas = true;
 
     mode = config.mode ?? config.resize ?? mode;
     background = config.background ?? config.backgroundColor ?? background;
-    canvas = config.canvas ?? config.sourceImg ?? canvas;
+    source = config.canvas ?? config.sourceImg ?? source;
 
     originX = Math.clamp((1 - origin.right) ?? origin.left ?? origin.x ?? originX, 0, 1);
     originY = Math.clamp((1 - origin.bottom) ?? origin.top ?? origin.y ?? originY);
+
+
+    keyBinding = config.keyBinding ?? config.keyStroke ?? config.shortcut ?? ((pushCanvas = false) || keyBinding);
+
+    pushCanvas = config.showPreview || config.showThumbnail || config.preview || pushCanvas;
+
+    if (pushCanvas) {
+      appendToDOM ();
+    }
     
-    if (canvas) {
-      if (!(canvas instanceof root.HTMLCanvasElement) || !(canvas instanceof root.HTMLImageElement)) {
-        alert ("Oh Noes! " + canvas.constructor.name + "s do not make nice thumbnails")
-        canvas = wasCnv;
+    if (source) {
+      if (!(source instanceof root.HTMLCanvasElement) || !(source instanceof root.HTMLImageElement)) {
+        alert ("Oh Noes! " + source.constructor.name + "s do not make nice thumbnails")
+        source = wasCnv;
       }
     }
   }
@@ -118,7 +202,7 @@ var KAThumbnail = ((root, udf) => {
    * @param {number} size
    *   The width/height of the thumbnail.  As of January 2023, this is always 200px
    */
-  function fillScale (ctx, source, size) {
+  function fillScale (size) {
     var ratio = source.width / source.height;
     var scale = size / Math.min(source.width, source.height);
     ctx.drawImage (
@@ -136,7 +220,7 @@ var KAThumbnail = ((root, udf) => {
    *
    * @see {@link fillScale}
    */
-  function fitScale (ctx, source, size) {
+  function fitScale (size) {
     var ratio = source.width / source.height;
     var scale = size / Math.max(source.width, source.height);
     ctx.drawImage  (
@@ -155,7 +239,7 @@ var KAThumbnail = ((root, udf) => {
    *
    * @see {@link fillScale}
    */
-  function stretchScale (ctx, source, size) {
+  function stretchScale (size) {
     ctx.drawImage  (source, 0, 0, size, size);
   }
 
@@ -166,30 +250,30 @@ var KAThumbnail = ((root, udf) => {
    *
    * @see {@link fillScale}
    */
-  function noScale (ctx, source, size) {
+  function noScale (size) {
     ctx.drawImage  (source, originX * (size - source.width), originY * (size - source.height));
   }
 
   /**
    * Guesses the best thumbnail source canvas, if one was not provided with `setup()`.
    *
-   * @returns {typeof canvas}
+   * @returns {typeof source}
    *   The thumbnail source.
    */
   function getSource () {
-    let source = canvas;
+    let temp = source;
     
     if (!source) {
-      source = doc.querySelector(
+      temp = doc.querySelector(
         "canvas#thumbnail,canvas[thumbnail],canvas[for=thumbnail],canvas[data-thumbnail],canvas[name=thumbnail],canvas.thumbnail"
       );
     }
 
     let isSafe = false;
 
-    if (source) {
+    if (temp) {
       try {
-        source.toDataURL();
+        temp.toDataURL();
         isSafe = true;
       } catch (silently_ignore) {
         alert ("Oh Noes! Your thumbnail source contains cross-origin data, and cannot be exported.")
@@ -199,10 +283,10 @@ var KAThumbnail = ((root, udf) => {
     }
 
     if (isSafe) {
-      canvas = source;
+      source = temp;
     }
 
-    return canvas;
+    return source;
   }
   exports.getSource = getSource;
 
@@ -237,7 +321,7 @@ var KAThumbnail = ((root, udf) => {
 
     getSource ();
 
-    if (!canvas) {
+    if (!source) {
       ctx.fillStyle = "grey";
       ctx.textAlign = "center";
       ctx.textBaseline = "center";
@@ -254,19 +338,19 @@ var KAThumbnail = ((root, udf) => {
       case "fill":
       case "cover":
       default:
-        fillScale(ctx, canvas, size);
+        fillScale(size);
         break;
       case "fit":
       case "auto":
-        fitScale(ctx, canvas, size);
+        fitScale(size);
         break;
       case "stretch":
       case "squash":
-        stretchScale(ctx, canvas, size);
+        stretchScale(size);
         break;
       case "none":
       case "absolute":
-        noScale(ctx, canvas, size);
+        noScale(size);
         break;
     }
 
@@ -275,6 +359,9 @@ var KAThumbnail = ((root, udf) => {
 
   // And here's the leak!
   root.parent.WebpageOutput.prototype.getScreenshot = handleSave;
+
+  // Why not?
+  root.addEventListener("keyup", checkKeyBinding);
 
   return root.KAThumbnail = exports;
 
