@@ -29,7 +29,7 @@ var KAThumbnail = ((root, udf) => {
       background = "white",
       originX = 0.5,
       originY = 0.5,
-      keyBinding = "Alt + T",
+      keyBinding = "Escape",
       canvasWasPushed = false,
 
   /**
@@ -39,6 +39,7 @@ var KAThumbnail = ((root, udf) => {
       source,
       canvas = doc.createElement("canvas"),
       context = canvas.getContext("2d"),
+      wrapper,
 
   // KAThumbnail.JS
       exports = {
@@ -61,6 +62,48 @@ var KAThumbnail = ((root, udf) => {
   Math.clamp = (v, m, x) => v < m ? m : v > x ? x : v;
 
   /**
+   * Brings the preview canvas into view, usually after a user types the proper
+   * keystroke.
+   */
+  function showCanvas () {
+    if (!canvasWasPushed) {
+      appendToDOM ();
+    }
+    wrapper.style.opacity = "1";
+    wrapper.style.top = "0px";
+    wrapper.style.visibility = "visible";
+    canvas.dataset.open = "true";
+  }
+  exports.showPreview = exports.show = showCanvas;
+
+  /**
+   * Hides the preview canvas, after pushing it to the DOM (if needed).
+   */
+  function hideCanvas () {
+    if (!canvasWasPushed) {
+      appendToDOM ();
+    }
+    wrapper.style.opacity = "0";
+    wrapper.style.top = "-50px";
+    wrapper.style.visibility = "hidden";
+    canvas.dataset.open = "false";
+  }
+  exports.hidePreview = exports.hide = hideCanvas;
+  
+  /**
+   * Toggles the visibility of the preview canvas, and pushes the element to the
+   * DOM if needed.
+   */
+  function toggleCanvas () {
+    if (canvas.dataset.open === "true") {
+      hideCanvas ();
+    } else {
+      showCanvas ();
+    }
+  }
+  exports.togglePreview = exports.toggle = toggleCanvas;
+
+  /**
    * Manages the key binding for toggling the canvas, when needed.
    * @param {KeyboardEvent} evt The event object handed by the listener
    */
@@ -69,28 +112,36 @@ var KAThumbnail = ((root, udf) => {
     
     if (!canvasWasPushed) return;
     
+    // Hide on "esc", in the event of a panic :P
+    if (evt.code === "Escape" && canvas.dataset.open === "true") {
+      evt.preventDefault ();
+      hideCanvas ();
+      return false;
+    }
+
     winders:for (let key of strokes) {
       switch (key.toLowerCase()) {
         case "alt":
-          if (!evt.altKey) return; break;
+          if (!evt.altKey) return true; break;
         case "ctrl":
         case "control":
         case "cmd":
         case "command":
-          if (!evt.ctrlKey) return; break;
+          if (!evt.ctrlKey) return true; break;
         case "meta":
         case "home":
-          if (!evt.metaKey) return; break;
+          if (!evt.metaKey) return true; break;
         default:
           if (key.length < 2) {
             key = "Key" + key.toUpperCase();
           }
-          if (evt.code !== key) return;
+          if (evt.code !== key) return true;
           break winders;
       }
     }
-
+    evt.preventDefault ();
     toggleCanvas ();
+    return false;
   }
 
   /**
@@ -98,7 +149,7 @@ var KAThumbnail = ((root, udf) => {
    * and gives it style :D
    */
   function appendToDOM () {
-    let wrapper = doc.createElement ("div");
+    wrapper = doc.createElement ("div");
 
     canvas.dataset.open = "false";
 
@@ -108,10 +159,11 @@ var KAThumbnail = ((root, udf) => {
        display: flex;
        align-items: center;
        justify-content: center;
-       top: 0;
+       top: -50px;
        left: 0;
        width: 100vw;
        height: 100vh;
+       z-index: 1000;
        backdrop-filter: blur(5px);
        opacity: 0;
        visibility: hidden;
@@ -119,6 +171,10 @@ var KAThumbnail = ((root, udf) => {
     );
     wrapper.appendChild(canvas);
     doc.body.appendChild(wrapper);
+
+    wrapper.addEventListener("click", showCanvas);
+
+    canvasWasPushed = true;
   }
 
   /**
@@ -176,7 +232,7 @@ var KAThumbnail = ((root, udf) => {
 
     pushCanvas = config.showPreview || config.showThumbnail || config.preview || pushCanvas;
 
-    if (pushCanvas) {
+    if (pushCanvas && !canvasWasPushed) {
       appendToDOM ();
     }
     
@@ -313,26 +369,25 @@ var KAThumbnail = ((root, udf) => {
    * @returns {void}
    */
   function handleSave (size, callback) {
-    /** @type {HTMLCanvasElement} */
-    let cnv = doc.createElement("canvas");
-    let ctx = cnv.getContext("2d");
 
-    cnv.width = cnv.height = size;
+    canvas.width = canvas.height = size;
+
+    context.clearRect (0, 0, size, size);
 
     getSource ();
 
     if (!source) {
-      ctx.fillStyle = "grey";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "center";
-      ctx.font = Math.round(size * 2 / 3) + "px monospace bold";
-      ctx.fillText("?", size / 2, size / 2);
+      context.fillStyle = "grey";
+      context.textAlign = "center";
+      context.textBaseline = "center";
+      context.font = Math.round(size * 2 / 3) + "px monospace bold";
+      context.fillText("?", size / 2, size / 2);
 
-      return callback(cnv.toDataURL("image/png"));
+      return callback(canvas.toDataURL("image/png"));
     }
 
-    ctx.fillStyle = background;
-    ctx.fillRect (0, 0, size, size);
+    context.fillStyle = background;
+    context.fillRect (0, 0, size, size);
 
     switch (mode) {
       case "fill":
@@ -354,7 +409,7 @@ var KAThumbnail = ((root, udf) => {
         break;
     }
 
-    callback(cnv.toDataURL("image/png"));
+    callback(canvas.toDataURL("image/png"));
   }
 
   // And here's the leak!
