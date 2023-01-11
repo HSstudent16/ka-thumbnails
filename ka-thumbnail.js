@@ -249,19 +249,13 @@ var KAThumbnail = ((root, udf) => {
    * Draws a resized image to the provided rendering context.  The image is resized
    * so that it covers the thumbnail entirely.
    *
-   * @param {CanvasRenderingContext2D} ctx
-   *   The rendering context of the thumbnail canvas.
-   *
-   * @param {typeof canvas} source
-   *   The input image, which is painted to the thumbnail canvas.
-   *
    * @param {number} size
    *   The width/height of the thumbnail.  As of January 2023, this is always 200px
    */
   function fillScale (size) {
-    var ratio = source.width / source.height;
-    var scale = size / Math.min(source.width, source.height);
-    ctx.drawImage (
+    let ratio = source.width / source.height;
+    let scale = size / Math.min(source.width, source.height);
+    context.drawImage (
       source,
       Math.min(0, originX * size * (1 - ratio)),
       Math.min(0, originY * size * (1 - (1 / ratio))),
@@ -277,9 +271,9 @@ var KAThumbnail = ((root, udf) => {
    * @see {@link fillScale}
    */
   function fitScale (size) {
-    var ratio = source.width / source.height;
-    var scale = size / Math.max(source.width, source.height);
-    ctx.drawImage  (
+    let ratio = source.width / source.height;
+    let scale = size / Math.max(source.width, source.height);
+    context.drawImage  (
       source,
       Math.max(0, 0.5 * size * (1 - ratio)),
       Math.max(0, 0.5 * size * (1 - (1 / ratio))),
@@ -296,7 +290,7 @@ var KAThumbnail = ((root, udf) => {
    * @see {@link fillScale}
    */
   function stretchScale (size) {
-    ctx.drawImage  (source, 0, 0, size, size);
+    context.drawImage  (source, 0, 0, size, size);
   }
 
   /**
@@ -307,7 +301,7 @@ var KAThumbnail = ((root, udf) => {
    * @see {@link fillScale}
    */
   function noScale (size) {
-    ctx.drawImage  (source, originX * (size - source.width), originY * (size - source.height));
+    context.drawImage  (source, originX * (size - source.width), originY * (size - source.height));
   }
 
   /**
@@ -406,8 +400,7 @@ var KAThumbnail = ((root, udf) => {
    *
    * @param {callback} callback
    *  Khan Academy's handler for thumbnails, typically called when a program is saved.
-   *
-   * @returns {void}
+   * 
    */
   function handleSave (size, callback) {
     paintCanvas (size);
