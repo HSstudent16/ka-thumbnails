@@ -2,6 +2,13 @@
 
 Welcome to the Github repo for `KAThumbnail.JS`!  This little module allows you to to have direct control over how your thumbnails appear, with little work needed.  `KAThumbnail.JS` is compatible with every reasonable HTML 5 canvas libary, and requires almost no code to implement.
 
+## Where credit is due
+
+Thank you...
+
+ - ski ([@thelegendski](https://github.com/thelegendski/)) for fixing a few spelling errors, and recommending the preview feature!
+ - Astro ([@astro-develops](https://github.com/astro-develops/)) for some advice for the preview feature!
+
 ## Getting started
 
 So you want to use it, huh?  Well, first, you'll need to import the library.  Khan Academy's CORS policy requires that this be done with JSDelivr.
@@ -63,5 +70,5 @@ ski.js is a lightweight spin-off of Processing.JS that closely wraps the native 
 ```
 ## Documentation
 
-For now, there is none =P
-The code snippets above are enough to create awesome thumbnails, though.
+Check out the USAGE.md file :)
+
