@@ -66,7 +66,7 @@ var KAThumbnail = ((root, udf) => {
       appendToDOM ();
     }
     wrapper.style.opacity = "1";
-    canvas.style.transform = "translate(0, 0px)";
+    canvas.style.translate = "y -50px";
     wrapper.style.visibility = "visible";
     canvas.dataset.open = "true";
 
@@ -82,7 +82,7 @@ var KAThumbnail = ((root, udf) => {
       appendToDOM ();
     }
     wrapper.style.opacity = "0";
-    canvas.style.transform = "translate(0, -50px)";
+    canvas.style.translate = "y 0px";
     wrapper.style.visibility = "hidden";
     canvas.dataset.open = "false";
   }
@@ -165,10 +165,14 @@ var KAThumbnail = ((root, udf) => {
        backdrop-filter: blur(5px);
        opacity: 0;
        visibility: hidden;
-       transition: all ease .2s;`
+       transition: all ease .4s;`
     );
-    canvas.style.transform = "translate(0, -50px)";
-    canvas.style.animation = "transform ease .2s";
+    canvas.setAttribute(
+      "style",
+      `translate: y -50px;
+       transition: translate ease .4s;
+       box-shadow: 0 0 5px 0 black;`
+    )
     wrapper.appendChild(canvas);
     doc.body.appendChild(wrapper);
 
@@ -214,6 +218,22 @@ var KAThumbnail = ((root, udf) => {
    * @param {number} [config.origin.y]
    *   The vertical position, as a percent, where 0 brings the top-most edge into view, and 1 brings
    *   the bottom-most.  Values not between 0 and 1 will be clamped.
+   * 
+   * @param {string} [config.shortcut]
+   *   A keyboard shortcut for summoning a preview canvas.  Shortcuts should be provided in a 
+   *   "key + key + key" syntax, with keys delimited by the plus sign, and with only one alpha-numerical
+   *   key required.  For example:
+   *    - "Ctrl + Alt + Delete"
+   *    - "Shift + Period"
+   *    - "Meta + Escape"
+   *   If a custom shortcut is set, then the preview canvas is automatically enabled, and setting 
+   *   `config.preview` is not needed.
+   * 
+   * @param {boolean} [config.preview]
+   *   Enables or disables the preview canvas.  Disabling will prevent a keyboard shortcut from summoning
+   *   the preview.  If a custom shortcut is set, then the preview canvas is automatically enabled and this
+   *   property is not needed.  The default keybinding is `"Escape"`
+   * 
    */
   function setup (config) {
     let wasCnv = source;
@@ -230,7 +250,7 @@ var KAThumbnail = ((root, udf) => {
 
     keyBinding = config.keyBinding ?? config.keyStroke ?? config.shortcut ?? ((pushCanvas = false) || keyBinding);
 
-    pushCanvas = config.showPreview || config.showThumbnail || config.preview || pushCanvas;
+    pushCanvas = config.showPreview ?? config.showThumbnail ?? config.preview ?? pushCanvas;
 
     if (pushCanvas && !canvasWasPushed) {
       appendToDOM ();
