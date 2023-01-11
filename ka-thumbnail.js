@@ -3,17 +3,10 @@
  *
  * Information about usage can be found in the README file.
  *
- * @version 1.1.c-Dev
+ * @version 1.1.0
  * @author  HSstudent16
  * @license MIT
- * 
- * @todo
- *  - Render thumbnail to canvas on preview.
- * 
- * @done
- *  - Globalize thumbnail canvas & context
- *  - Append canvas to DOM & style if binding set.
- *  - Add keybinding defaults & settings for thumbnail preview
+ *
  */
 var KAThumbnail = ((root, udf) => {
 
@@ -73,7 +66,7 @@ var KAThumbnail = ((root, udf) => {
       appendToDOM ();
     }
     wrapper.style.opacity = "1";
-    canvas.style.transform = "translate (0, 0px)";
+    canvas.style.transform = "translate(0, 0px)";
     wrapper.style.visibility = "visible";
     canvas.dataset.open = "true";
 
@@ -89,7 +82,7 @@ var KAThumbnail = ((root, udf) => {
       appendToDOM ();
     }
     wrapper.style.opacity = "0";
-    canvas.style.transform = "translate (0, -50px)";
+    canvas.style.transform = "translate(0, -50px)";
     wrapper.style.visibility = "hidden";
     canvas.dataset.open = "false";
   }
@@ -174,12 +167,12 @@ var KAThumbnail = ((root, udf) => {
        visibility: hidden;
        transition: all ease .2s;`
     );
-    canvas.style.transform = "translate (0, -50px)";
+    canvas.style.transform = "translate(0, -50px)";
     canvas.style.animation = "transform ease .2s";
     wrapper.appendChild(canvas);
     doc.body.appendChild(wrapper);
 
-    wrapper.addEventListener("click", showCanvas);
+    wrapper.addEventListener("click", hideCanvas);
 
     canvasWasPushed = true;
   }
@@ -367,7 +360,7 @@ var KAThumbnail = ((root, udf) => {
       context.font = Math.round(size * 2 / 3) + "px monospace bold";
       context.fillText("?", size / 2, size / 2);
 
-      return callback(canvas.toDataURL("image/png"));
+      return;
     }
 
     context.fillStyle = background;
@@ -417,7 +410,7 @@ var KAThumbnail = ((root, udf) => {
    * @returns {void}
    */
   function handleSave (size, callback) {
-    paintCanvas ();
+    paintCanvas (size);
 
     callback(canvas.toDataURL("image/png"));
   }
