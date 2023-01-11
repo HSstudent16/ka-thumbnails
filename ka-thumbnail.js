@@ -3,14 +3,17 @@
  *
  * Information about usage can be found in the README file.
  *
- * @version 1.1.0-Dev
+ * @version 1.1.c-Dev
  * @author  HSstudent16
  * @license MIT
  * 
  * @todo
+ *  - Render thumbnail to canvas on preview.
+ * 
+ * @done
  *  - Globalize thumbnail canvas & context
- *  - Add keybinding defaults & settings for thumbnail preview
  *  - Append canvas to DOM & style if binding set.
+ *  - Add keybinding defaults & settings for thumbnail preview
  */
 var KAThumbnail = ((root, udf) => {
 
@@ -70,9 +73,11 @@ var KAThumbnail = ((root, udf) => {
       appendToDOM ();
     }
     wrapper.style.opacity = "1";
-    wrapper.style.top = "0px";
+    canvas.style.transform = "translate (0, 0px)";
     wrapper.style.visibility = "visible";
     canvas.dataset.open = "true";
+
+    paintCanvas (200);
   }
   exports.showPreview = exports.show = showCanvas;
 
@@ -84,7 +89,7 @@ var KAThumbnail = ((root, udf) => {
       appendToDOM ();
     }
     wrapper.style.opacity = "0";
-    wrapper.style.top = "-50px";
+    canvas.style.transform = "translate (0, -50px)";
     wrapper.style.visibility = "hidden";
     canvas.dataset.open = "false";
   }
@@ -159,7 +164,7 @@ var KAThumbnail = ((root, udf) => {
        display: flex;
        align-items: center;
        justify-content: center;
-       top: -50px;
+       top: 0px;
        left: 0;
        width: 100vw;
        height: 100vh;
@@ -169,6 +174,8 @@ var KAThumbnail = ((root, udf) => {
        visibility: hidden;
        transition: all ease .2s;`
     );
+    canvas.style.transform = "translate (0, -50px)";
+    canvas.style.animation = "transform ease .2s";
     wrapper.appendChild(canvas);
     doc.body.appendChild(wrapper);
 
@@ -346,32 +353,9 @@ var KAThumbnail = ((root, udf) => {
   }
   exports.getSource = getSource;
 
-  /**
-   * Khan Academy's handler for thumbnails, typically called when a program is saved.
-   *
-   * @callback callback
-   * @param {string} dataURL
-   *   A Base64-encoded data URL for the thumbnail image.
-   *
-   * @returns {void}
-   */
 
-  /**
-   * Handles Khan Academy's "internal" thumbnail saving process.  This is made avaiable
-   * thanks to a leak of the `WebpageOutput` constructor to `window.parent`.
-   *
-   * @param {200} size
-   *   The thumbnail size;  this is almost always 200 pixels.
-   *
-   * @param {callback} callback
-   *  Khan Academy's handler for thumbnails, typically called when a program is saved.
-   *
-   * @returns {void}
-   */
-  function handleSave (size, callback) {
-
+  function paintCanvas (size) {
     canvas.width = canvas.height = size;
-
     context.clearRect (0, 0, size, size);
 
     getSource ();
@@ -408,6 +392,32 @@ var KAThumbnail = ((root, udf) => {
         noScale(size);
         break;
     }
+  }
+
+  /**
+   * Khan Academy's handler for thumbnails, typically called when a program is saved.
+   *
+   * @callback callback
+   * @param {string} dataURL
+   *   A Base64-encoded data URL for the thumbnail image.
+   *
+   * @returns {void}
+   */
+
+  /**
+   * Handles Khan Academy's "internal" thumbnail saving process.  This is made avaiable
+   * thanks to a leak of the `WebpageOutput` constructor to `window.parent`.
+   *
+   * @param {200} size
+   *   The thumbnail size;  this is almost always 200 pixels.
+   *
+   * @param {callback} callback
+   *  Khan Academy's handler for thumbnails, typically called when a program is saved.
+   *
+   * @returns {void}
+   */
+  function handleSave (size, callback) {
+    paintCanvas ();
 
     callback(canvas.toDataURL("image/png"));
   }
